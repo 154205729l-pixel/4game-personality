@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>你是哪种游戏人格？</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#0f0c29 0%,#1a1a4e 40%,#24243e 100%);color:#fff;min-height:100vh;overflow-x:hidden}
+.section{display:none;min-height:100vh;padding:20px;animation:fadeIn .4s ease}
+.section.active{display:flex;flex-direction:column;align-items:center;justify-content:center}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounceIn{0%{opacity:0;transform:scale(.3)}50%{transform:scale(1.05)}70%{transform:scale(.95)}100%{opacity:1;transform:scale(1)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes countUp{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+
+.home-title{font-size:28px;font-weight:900;margin-bottom:8px;background:linear-gradient(90deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200% auto;animation:shimmer 3s linear infinite}
+.home-subtitle{font-size:15px;color:rgba(255,255,255,.6);margin-bottom:40px}
+.home-icons{font-size:36px;margin-bottom:30px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.home-icons span{animation:float 2s ease-in-out infinite}
+.home-icons span:nth-child(2){animation-delay:.2s}.home-icons span:nth-child(3){animation-delay:.4s}.home-icons span:nth-child(4){animation-delay:.6s}.home-icons span:nth-child(5){animation-delay:.8s}.home-icons span:nth-child(6){animation-delay:1s}.home-icons span:nth-child(7){animation-delay:1.2s}.home-icons span:nth-child(8){animation-delay:1.4s}.home-icons span:nth-child(9){animation-delay:1.6s}.home-icons span:nth-child(10){animation-delay:1.8s}.home-icons span:nth-child(11){animation-delay:2s}.home-icons span:nth-child(12){animation-delay:2.2s}
+.home-desc{max-width:320px;text-align:center;margin-bottom:32px}
+.home-desc p{font-size:13px;color:rgba(255,255,255,.45);line-height:1.8}
+.home-stats{display:flex;gap:24px;margin-bottom:32px}
+.home-stat{text-align:center}
+.home-stat .num{font-size:22px;font-weight:800;color:#ffd93d}
+.home-stat .label{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
+.btn-start{background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;font-size:18px;font-weight:700;padding:16px 60px;border-radius:50px;cursor:pointer;box-shadow:0 8px 25px rgba(102,126,234,.4);transition:all .2s}
+.btn-start:active{transform:scale(.95)}
+.home-tip{font-size:12px;color:rgba(255,255,255,.3);margin-top:20px}
+
+.quiz-header{width:100%;max-width:360px;margin-bottom:24px}
+.progress-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-bottom:12px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#667eea,#764ba2);border-radius:3px;transition:width .3s ease}
+.quiz-count{font-size:13px;color:rgba(255,255,255,.5);text-align:right}
+.quiz-question{font-size:20px;font-weight:700;text-align:center;margin-bottom:28px;max-width:340px;line-height:1.5}
+.quiz-options{width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px}
+.quiz-option{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.1);border-radius:16px;padding:16px 20px;font-size:15px;color:#fff;cursor:pointer;transition:all .2s;text-align:left;line-height:1.4}
+.quiz-option:active{transform:scale(.97)}
+.quiz-option.selected{background:rgba(102,126,234,.3);border-color:#667eea;box-shadow:0 0 20px rgba(102,126,234,.3)}
+
+#result.active{justify-content:flex-start;padding-top:40px;padding-bottom:40px}
+.result-card{background:rgba(255,255,255,.06);border-radius:24px;padding:32px 24px;max-width:360px;width:100%;text-align:center;animation:bounceIn .6s ease;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1)}
+.result-match{font-size:48px;font-weight:900;animation:countUp .6s ease}
+.result-match-label{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:16px}
+.result-avatar{width:100px;height:100px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:52px;animation:float 3s ease-in-out infinite;position:relative}
+.result-avatar::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:3px solid;opacity:.4;animation:spin 4s linear infinite}
+.result-tag{display:inline-block;padding:4px 16px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:10px;letter-spacing:1px}
+.result-name{font-size:26px;font-weight:900;margin-bottom:6px}
+.result-slogan{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:16px;line-height:1.5}
+.traits-wrap{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px}
+.trait-tag{background:rgba(255,255,255,.1);padding:4px 12px;border-radius:12px;font-size:12px}
+.radar-wrap{margin:0 auto 20px;width:220px;height:220px}
+.top3-section{margin-bottom:16px;width:100%}
+.top3-item{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.top3-rank{font-size:18px;font-weight:800;width:24px;text-align:center}
+.top3-info{flex:1}
+.top3-name{font-size:13px;color:rgba(255,255,255,.7)}
+.top3-bar{height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-top:4px}
+.top3-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.top3-pct{font-size:13px;font-weight:700;width:40px;text-align:right}
+.btn-unlock{background:linear-gradient(135deg,#f7971e,#ffd200);border:none;color:#1a0533;font-size:16px;font-weight:700;padding:14px 40px;border-radius:50px;cursor:pointer;box-shadow:0 6px 20px rgba(247,151,30,.4);margin-top:12px;transition:all .2s;display:flex;align-items:center;gap:8px;margin-left:auto;margin-right:auto}
+.btn-unlock:active{transform:scale(.95)}
+.btn-unlock:disabled{opacity:.62;transform:none}
+.btn-share{background:transparent;border:2px solid rgba(255,255,255,.2);color:#fff;font-size:14px;padding:10px 30px;border-radius:50px;cursor:pointer;margin-top:12px;transition:all .2s;width:100%}
+.btn-share:active{transform:scale(.95)}
+.btn-retry{background:transparent;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;margin-top:14px;text-decoration:underline}
+
+#complete.active{justify-content:center;align-items:center}
+.complete-icon{font-size:72px;animation:bounceIn .6s ease}
+.complete-title{font-size:24px;font-weight:800;margin-top:20px;margin-bottom:10px}
+.complete-subtitle{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:36px}
+.complete-progress-ring{position:relative;width:120px;height:120px;margin-bottom:28px}
+.complete-progress-ring svg{transform:rotate(-90deg)}
+.complete-progress-ring circle{fill:none;stroke-width:6}
+.complete-progress-ring .ring-bg{stroke:rgba(255,255,255,.1)}
+.complete-progress-ring .ring-fill{stroke:url(#ringGrad);stroke-linecap:round;stroke-dasharray:339.292;stroke-dashoffset:339.292;transition:stroke-dashoffset 2.5s ease-out}
+.complete-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.complete-ring-pct{font-size:28px;font-weight:900;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.complete-ring-label{font-size:11px;color:rgba(255,255,255,.4)}
+.complete-dots{display:flex;gap:8px;margin-bottom:12px}
+.complete-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);animation:dotPulse 1.2s ease-in-out infinite}
+.complete-dot:nth-child(2){animation-delay:.2s}
+.complete-dot:nth-child(3){animation-delay:.4s}
+@keyframes dotPulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+.complete-hint{font-size:13px;color:rgba(255,255,255,.35)}
+
+.analysis-section{max-width:360px;width:100%;margin-top:20px}
+.analysis-card{background:rgba(255,255,255,.06);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid rgba(255,255,255,.08);animation:slideUp .4s ease both}
+.analysis-card:nth-child(2){animation-delay:.05s}.analysis-card:nth-child(3){animation-delay:.1s}.analysis-card:nth-child(4){animation-delay:.15s}.analysis-card:nth-child(5){animation-delay:.2s}.analysis-card:nth-child(6){animation-delay:.25s}.analysis-card:nth-child(7){animation-delay:.3s}.analysis-card:nth-child(8){animation-delay:.35s}.analysis-card:nth-child(9){animation-delay:.4s}.analysis-card:nth-child(10){animation-delay:.45s}.analysis-card:nth-child(11){animation-delay:.5s}
+.analysis-card h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.analysis-card p{font-size:13.5px;color:rgba(255,255,255,.7);line-height:1.7}
+.celeb-list{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+.celeb-item{display:flex;flex-direction:column;align-items:center;gap:4px;width:60px}
+.celeb-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(255,255,255,.08)}
+.celeb-name{font-size:11px;color:rgba(255,255,255,.6);text-align:center}
+.compat-grid{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.compat-item{flex:0 0 calc(33.33% - 6px);background:rgba(255,255,255,.05);border-radius:12px;padding:10px 6px;text-align:center}
+.compat-emoji{font-size:24px;margin-bottom:2px}
+.compat-label{font-size:10px;color:rgba(255,255,255,.5)}
+.compat-pct{font-size:13px;font-weight:700;margin-top:2px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.stat-row:last-child{margin-bottom:0}
+.stat-label{font-size:13px;color:rgba(255,255,255,.6)}
+.stat-stars{display:flex;gap:2px}
+.quote-box{background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border-radius:16px;padding:24px 20px;text-align:center;border:1px solid rgba(255,255,255,.08);margin-bottom:14px}
+.quote-text{font-size:16px;font-style:italic;color:rgba(255,255,255,.9);line-height:1.6;margin-bottom:8px}
+.quote-attr{font-size:12px;color:rgba(255,255,255,.4)}
+
+.type-0{--c1:#ff6b6b;--c2:#ee5a24}.type-1{--c1:#6bcb77;--c2:#1dd1a1}.type-2{--c1:#4d96ff;--c2:#667eea}.type-3{--c1:#ffd93d;--c2:#f7971e}.type-4{--c1:#a855f7;--c2:#7c3aed}.type-5{--c1:#f472b6;--c2:#ec4899}.type-6{--c1:#fb923c;--c2:#ea580c}.type-7{--c1:#38bdf8;--c2:#0ea5e9}.type-8{--c1:#34d399;--c2:#10b981}
+[class*="type-"] .result-avatar{background:linear-gradient(135deg,color-mix(in srgb,var(--c1) 20%,transparent),color-mix(in srgb,var(--c2) 20%,transparent))}
+[class*="type-"] .result-avatar::after{border-color:var(--c1)}
+[class*="type-"] .result-tag{background:color-mix(in srgb,var(--c1) 20%,transparent);color:var(--c1)}
+[class*="type-"] .result-match{color:var(--c1)}
+
+.ad-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:100;flex-direction:column;align-items:center;justify-content:center}
+.ad-overlay.active{display:flex}
+.ad-box{background:linear-gradient(135deg,#1e1e2e,#2d2d44);border-radius:20px;padding:40px 30px;text-align:center;max-width:320px;width:90%}
+.ad-label{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px;letter-spacing:2px}
+.ad-content{font-size:48px;margin-bottom:20px}
+.ad-title{font-size:16px;font-weight:600;margin-bottom:20px;line-height:1.6}
+.ad-progress{height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;margin-bottom:16px}
+.ad-progress-fill{height:100%;background:linear-gradient(90deg,#f7971e,#ffd200);border-radius:2px;width:0;transition:width .3s linear}
+.ad-timer{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:16px}
+.btn-ad-close{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:14px;padding:10px 36px;border-radius:50px;cursor:pointer;display:none;transition:all .2s}
+.btn-ad-close:active{transform:scale(.95)}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.15);backdrop-filter:blur(10px);padding:10px 24px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:200}
+.toast.show{opacity:1}
+.scroll-hint{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);text-align:center;color:rgba(255,255,255,.5);font-size:13px;z-index:50;animation:scrollBounce 1.5s ease-in-out infinite;transition:opacity .5s}
+.scroll-hint .arrow{font-size:18px;display:block;margin-top:2px}
+@keyframes scrollBounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+
+.bg-particles{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.bg-particle{position:absolute;font-size:24px;opacity:.08;animation:particleFloat linear infinite}
+@keyframes particleFloat{0%{transform:translateY(110vh) rotate(0deg)}100%{transform:translateY(-20vh) rotate(360deg)}}
+.section{position:relative;z-index:1}
+</style>
+</head>
+<body>
+<div class="bg-particles" id="bgParticles"></div>
+<script>
+(function(){
+  const icons=['🎮','🕹️','🗡️','🛡️','💎','🧪','🔮','🎯','🏹','👾','🎲','🃏','⚔️','🏆','💰','🗝️','🧭','🔥','❤️','⭐','🌟','💀','🐉','🦊','🎪','🎃','🪄','👑','🎖️','⚡'];
+  const container=document.getElementById('bgParticles');
+  for(let i=0;i<25;i++){
+    const span=document.createElement('span');
+    span.className='bg-particle';
+    span.textContent=icons[Math.floor(Math.random()*icons.length)];
+    span.style.left=Math.random()*100+'%';
+    span.style.fontSize=(16+Math.random()*20)+'px';
+    span.style.opacity=0.04+Math.random()*0.08;
+    span.style.animationDuration=(12+Math.random()*18)+'s';
+    span.style.animationDelay=(-Math.random()*20)+'s';
+    container.appendChild(span);
+  }
+})();
+</script>
+<div class="section active" id="home">
+  <div class="home-icons"><span>🎮</span><span>🕹️</span><span>🗡️</span><span>🛡️</span><span>💎</span><span>🧪</span><span>🔮</span><span>🎯</span><span>🏹</span><span>👾</span><span>🎲</span><span>🃏</span></div>
+  <h1 class="home-title">你是哪种游戏人格？</h1>
+  <p class="home-subtitle">18道题深度解析你的游戏灵魂</p>
+  <div class="home-desc"><p>基于玩家心理学模型，从9大游戏人格维度精准分析你的游戏DNA，找到最适合你的游戏类型</p></div>
+  <div class="home-stats">
+    <div class="home-stat"><div class="num">9</div><div class="label">人格类型</div></div>
+    <div class="home-stat"><div class="num">18</div><div class="label">精选题目</div></div>
+    <div class="home-stat"><div class="num">12+</div><div class="label">解析维度</div></div>
+  </div>
+  <button class="btn-start" onclick="startQuiz()">开始测试</button>
+  <p class="home-tip">测试约需3分钟 · 结果仅供娱乐</p>
+</div>
+<div class="section" id="quiz">
+  <div class="quiz-header"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div><div class="quiz-count" id="quizCount"></div></div>
+  <div class="quiz-question" id="quizQuestion"></div>
+  <div class="quiz-options" id="quizOptions"></div>
+</div>
+<div class="section" id="complete">
+  <div class="complete-icon">✅</div>
+  <div class="complete-title">答题完成！</div>
+  <div class="complete-subtitle">18道题全部作答完毕</div>
+  <div class="complete-progress-ring">
+    <svg width="120" height="120" viewBox="0 0 120 120">
+      <defs><linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#667eea"/><stop offset="100%" stop-color="#764ba2"/></linearGradient></defs>
+      <circle class="ring-bg" cx="60" cy="60" r="54"/>
+      <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="54"/>
+    </svg>
+    <div class="complete-ring-text">
+      <div class="complete-ring-pct" id="ringPct">0%</div>
+      <div class="complete-ring-label">分析中</div>
+    </div>
+  </div>
+  <div class="complete-dots"><span class="complete-dot"></span><span class="complete-dot"></span><span class="complete-dot"></span></div>
+  <div class="complete-hint">正在生成你的游戏人格报告...</div>
+</div>
+<div class="section" id="result"></div>
+<div class="ad-overlay" id="adOverlay">
+  <div class="ad-box">
+    <div class="ad-label">— 激励视频 —</div><div class="ad-content">🎮</div>
+    <div class="ad-title" id="adTitle">正在拉起激励视频</div>
+    <div class="ad-progress"><div class="ad-progress-fill" id="adProgressFill"></div></div>
+    <div class="ad-timer" id="adTimer">进入广告后 8 秒自动解锁</div>
+    <button class="btn-ad-close" id="adCloseBtn" onclick="closeAd()">取消等待，重新观看</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+// ===== 内嵌 ToBid 激励视频桥接组件，部署 index.html 时不再依赖外部 JS 文件 =====
+/*
+ * ToBid H5 rewarded-video bridge.
+ *
+ * This file only wraps the App WebView bridge methods:
+ * adRequest, preLoadVideo and connectVideo.
+ *
+ * Business rules such as "unlock after 8 seconds" should live in each game page,
+ * because different games may use different reward policies.
+ */
+(function (root) {
+  "use strict";
+
+  var DEFAULTS = {
+    adUrl: "https://ap.dongqiudi.com/plat/v3",
+    pgid: "1.15.2",
+    origin: "tobid",
+    sdkId: "6362731749334746",
+    sceneId: "leagueCollect_14",
+    data: {},
+    bridgeTimeout: 5000,
+    // Some native bridge methods do not callback reliably; keep this short so
+    // the page layer can recover, retry or apply its own fallback policy.
+    callbackTimeout: 8000,
+    onLog: null
+  };
+
+  function extend(target) {
+    var i;
+    var key;
+    var source;
+    target = target || {};
+    for (i = 1; i < arguments.length; i += 1) {
+      source = arguments[i] || {};
+      for (key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+    return target;
+  }
+
+  function isFunction(value) {
+    return typeof value === "function";
+  }
+
+  function toError(error) {
+    if (error instanceof Error) return error;
+    return new Error(String(error || "unknown error"));
+  }
+
+  function safeJsonParse(value) {
+    if (typeof value !== "string") return value;
+    try {
+      return JSON.parse(value);
+    } catch (error) {
+      return value;
+    }
+  }
+
+  function unwrapNativeResponse(response) {
+    var body = response && response._responseWrapedByNative ? response._responseWrapedByNative : response;
+    return safeJsonParse(body);
+  }
+
+  function findRewardAd(body) {
+    var data = body;
+    var i;
+    if (body && Object.prototype.toString.call(body.data) === "[object Array]") {
+      data = body.data;
+    }
+    if (Object.prototype.toString.call(data) !== "[object Array]") return null;
+    for (i = 0; i < data.length; i += 1) {
+      if (data[i] && data[i].ad_type === "sdk_rewarded_video") {
+        return data[i];
+      }
+    }
+    return null;
+  }
+
+  function ensureBridgeConnector() {
+    if (root.connectWebViewJavascriptBridge) return;
+
+    root.connectWebViewJavascriptBridge = function (callback) {
+      var iframe;
+
+      if (root.WebViewJavascriptBridge) {
+        if (!root.WebViewJavascriptBridge._messageHandler && root.WebViewJavascriptBridge.init) {
+          root.WebViewJavascriptBridge.init(function () {});
+        }
+        callback(root.WebViewJavascriptBridge);
+        return;
+      }
+
+      document.addEventListener("WebViewJavascriptBridgeReady", function () {
+        if (root.WebViewJavascriptBridge && !root.WebViewJavascriptBridge._messageHandler && root.WebViewJavascriptBridge.init) {
+          root.WebViewJavascriptBridge.init(function () {});
+        }
+        callback(root.WebViewJavascriptBridge);
+      }, false);
+
+      if (root.WVJBCallbacks) {
+        root.WVJBCallbacks.push(callback);
+        return;
+      }
+
+      root.WVJBCallbacks = [callback];
+      iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = "https://__bridge_loaded__";
+      document.documentElement.appendChild(iframe);
+      setTimeout(function () {
+        if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      }, 0);
+    };
+  }
+
+  function RewardVideoBridge(options) {
+    this.options = extend({}, DEFAULTS, options || {});
+    this.currentPayload = null;
+  }
+
+  RewardVideoBridge.prototype.log = function (title, data) {
+    if (isFunction(this.options.onLog)) {
+      this.options.onLog(title, data);
+    }
+    if (root.console && root.console.log) {
+      root.console.log("[RewardVideoBridge] " + title, data || "");
+    }
+  };
+
+  RewardVideoBridge.prototype.getBridge = function (callback) {
+    var self = this;
+    var done = false;
+    var timer;
+
+    ensureBridgeConnector();
+
+    timer = setTimeout(function () {
+      if (done) return;
+      done = true;
+      callback(new Error("未检测到 WebViewJavascriptBridge"));
+    }, this.options.bridgeTimeout);
+
+    root.connectWebViewJavascriptBridge(function (bridge) {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      if (bridge && bridge.callHandler) {
+        self.log("bridge ready");
+        callback(null, bridge);
+      } else {
+        callback(new Error("桥对象存在，但没有 callHandler 方法"));
+      }
+    });
+  };
+
+  RewardVideoBridge.prototype.callHandler = function (name, params, callback) {
+    var self = this;
+    var cb = isFunction(callback) ? callback : function () {};
+
+    this.log("callHandler: " + name, params);
+    this.getBridge(function (bridgeError, bridge) {
+      var done;
+      var timer;
+
+      if (bridgeError) {
+        self.log(name + " bridge error", { message: bridgeError.message });
+        cb(bridgeError);
+        return;
+      }
+
+      done = false;
+      timer = setTimeout(function () {
+        if (done) return;
+        done = true;
+        self.log(name + " callback timeout");
+        cb(null, null, { timeout: true });
+      }, self.options.callbackTimeout);
+
+      try {
+        bridge.callHandler(name, params || {}, function (response) {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          self.log(name + " callback", response);
+          cb(null, response, { timeout: false });
+        });
+      } catch (error) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        self.log(name + " call error", { message: error.message });
+        cb(error);
+      }
+    });
+  };
+
+  RewardVideoBridge.prototype.detectBridge = function (callback) {
+    this.getBridge(function (error) {
+      if (isFunction(callback)) callback(error || null);
+    });
+  };
+
+  RewardVideoBridge.prototype.buildDefaultPayload = function (options) {
+    var opts = extend({}, this.options, options || {});
+    if (!opts.sdkId && !opts.sdk_id) {
+      throw new Error("缺少 sdkId，无法请求激励视频广告位");
+    }
+    return {
+      origin: opts.origin || "",
+      sdk_id: opts.sdk_id || opts.sdkId,
+      imp_mon_arr: opts.imp_mon_arr || opts.impMonArr || [],
+      click_mon_arr: opts.click_mon_arr || opts.clickMonArr || [],
+      ct: opts.ct || "",
+      pgid: opts.pgid || this.options.pgid
+    };
+  };
+
+  RewardVideoBridge.prototype.setPayload = function (payload) {
+    this.currentPayload = extend({}, payload || {});
+    return this.currentPayload;
+  };
+
+  RewardVideoBridge.prototype.getPayload = function () {
+    return this.currentPayload;
+  };
+
+  RewardVideoBridge.prototype.preloadPayload = function (payload, callback) {
+    var finalPayload = this.setPayload(payload);
+    this.callHandler("preLoadVideo", finalPayload, callback);
+  };
+
+  RewardVideoBridge.prototype.preload = function (options, callback) {
+    var payload;
+    var cb = callback;
+    if (isFunction(options)) {
+      cb = options;
+      options = {};
+    }
+
+    try {
+      payload = this.buildDefaultPayload(options);
+    } catch (error) {
+      if (isFunction(cb)) cb(toError(error));
+      return;
+    }
+
+    this.preloadPayload(payload, cb);
+  };
+
+  RewardVideoBridge.prototype.loadFromConfig = function (options, callback) {
+    var self = this;
+    var opts = options || {};
+    var cb = callback;
+
+    if (isFunction(options)) {
+      cb = options;
+      opts = {};
+    }
+
+    this.callHandler("adRequest", {
+      method: "get",
+      url: opts.adUrl || this.options.adUrl,
+      param: {
+        pgid: opts.pgid || this.options.pgid
+      }
+    }, function (error, response) {
+      var body;
+      var ad;
+      var payload;
+
+      if (error) {
+        if (isFunction(cb)) cb(error);
+        return;
+      }
+
+      body = unwrapNativeResponse(response);
+      self.log("adRequest unwrapped", body);
+      ad = findRewardAd(body);
+      if (!ad) {
+        if (isFunction(cb)) cb(new Error("adRequest 没找到 ad_type=sdk_rewarded_video 的广告"));
+        return;
+      }
+
+      payload = {
+        origin: ad.ad_source && ad.ad_source.sdk_origin,
+        sdk_id: ad.ad_source && ad.ad_source.sdk_position_id,
+        imp_mon_arr: ad.imp_mon_arr || [],
+        click_mon_arr: ad.click_mon_arr || [],
+        ct: "",
+        pgid: opts.pgid || self.options.pgid
+      };
+
+      if (!payload.sdk_id) {
+        if (isFunction(cb)) cb(new Error("广告配置里没有 ad_source.sdk_position_id"));
+        return;
+      }
+
+      self.preloadPayload(payload, function (preloadError, preloadResponse, meta) {
+        if (isFunction(cb)) cb(preloadError || null, payload, preloadResponse, meta);
+      });
+    });
+  };
+
+  RewardVideoBridge.prototype.show = function (options, callback) {
+    var opts = options || {};
+    var cb = callback;
+    var base;
+    var payload;
+
+    if (isFunction(options)) {
+      cb = options;
+      opts = {};
+    }
+
+    try {
+      base = this.currentPayload || this.buildDefaultPayload(opts);
+      payload = extend({
+        id: opts.id || opts.sceneId || this.options.sceneId,
+        data: opts.data || this.options.data || {}
+      }, base);
+    } catch (error) {
+      if (isFunction(cb)) cb(toError(error));
+      return;
+    }
+
+    this.callHandler("connectVideo", payload, cb);
+  };
+
+  RewardVideoBridge.prototype.preloadThenShow = function (options, callback) {
+    var self = this;
+    var opts = options || {};
+    var cb = callback;
+
+    if (isFunction(options)) {
+      cb = options;
+      opts = {};
+    }
+
+    this.preload(opts, function (error) {
+      if (error) {
+        if (isFunction(cb)) cb(error);
+        return;
+      }
+      self.show(opts, cb);
+    });
+  };
+
+  RewardVideoBridge.prototype.loadFromConfigThenShow = function (options, callback) {
+    var self = this;
+    var opts = options || {};
+    var cb = callback;
+
+    if (isFunction(options)) {
+      cb = options;
+      opts = {};
+    }
+
+    this.loadFromConfig(opts, function (error) {
+      if (error) {
+        if (isFunction(cb)) cb(error);
+        return;
+      }
+      self.show(opts, cb);
+    });
+  };
+
+  root.RewardVideoBridge = {
+    create: function (options) {
+      return new RewardVideoBridge(options);
+    },
+    Constructor: RewardVideoBridge
+  };
+})(window);
+
+</script>
+<script>
+// 9维: 0战斗 1探索 2社交 3成就 4策略 5创造 6剧情 7休闲 8速通
+const Q=[
+{q:'进入一个全新的游戏世界，你第一件事会做什么？',opts:[
+{text:'找个怪先打一架试试手感',s:[3,0,0,0,0,0,0,0,1]},
+{text:'打开地图看看这个世界有多大',s:[0,3,0,0,0,0,0,0,0]},
+{text:'看看附近有没有其他玩家可以组队',s:[0,0,3,0,0,0,0,0,0]},
+{text:'研究一下成就列表和收集系统',s:[0,0,0,3,0,0,0,0,0]}]},
+{q:'遇到一个超难的Boss，你会怎么办？',opts:[
+{text:'单挑到底，死了再来',s:[3,0,0,0,0,0,0,0,1]},
+{text:'先研究Boss机制，制定最优策略',s:[0,0,0,0,3,0,0,0,1]},
+{text:'喊朋友一起来打',s:[0,0,3,0,0,0,0,0,0]},
+{text:'查攻略找到最速通关方法',s:[0,0,0,1,0,0,0,0,3]}]},
+{q:'你最喜欢游戏里的哪种奖励？',opts:[
+{text:'一把超强的传说武器',s:[3,0,0,1,0,0,0,0,0]},
+{text:'解锁一片新的隐藏区域',s:[0,3,0,0,0,0,0,0,0]},
+{text:'一套稀有的装饰外观',s:[0,0,0,0,0,3,0,0,0]},
+{text:'一段感人的隐藏剧情',s:[0,0,0,0,0,0,3,0,0]}]},
+{q:'在多人游戏中，你通常扮演什么角色？',opts:[
+{text:'输出C位，伤害拉满',s:[3,0,0,0,0,0,0,0,0]},
+{text:'指挥官，制定战术协调团队',s:[0,0,1,0,3,0,0,0,0]},
+{text:'辅助奶妈，保护队友',s:[0,0,3,0,0,0,0,0,0]},
+{text:'随便选，开心就好',s:[0,0,0,0,0,0,0,3,0]}]},
+{q:'游戏里最让你兴奋的时刻是？',opts:[
+{text:'击败强敌的那一瞬间',s:[3,0,0,0,0,0,0,0,0]},
+{text:'发现一个没人知道的秘密',s:[0,3,0,0,0,0,0,0,0]},
+{text:'亲手建造出一个宏伟的作品',s:[0,0,0,0,0,3,0,0,0]},
+{text:'刷新了自己的最速通关记录',s:[0,0,0,0,0,0,0,0,3]}]},
+{q:'你更喜欢哪种游戏难度设置？',opts:[
+{text:'最高难度，不虐不爽',s:[2,0,0,0,0,0,0,0,2]},
+{text:'普通难度，享受剧情和风景',s:[0,1,0,0,0,0,2,1,0]},
+{text:'看队友选什么我选什么',s:[0,0,3,0,0,0,0,0,0]},
+{text:'先普通通关，再逐步挑战高难全收集',s:[0,0,0,3,0,0,0,0,0]}]},
+{q:'游戏里捡到一件用不上的稀有装备，你会？',opts:[
+{text:'分解掉换强化材料，提升战力',s:[3,0,0,0,0,0,0,0,0]},
+{text:'留着，说不定哪个隐藏任务用得上',s:[0,3,0,1,0,0,0,0,0]},
+{text:'送给需要的朋友',s:[0,0,3,0,0,0,0,0,0]},
+{text:'放进展示柜当装饰品',s:[0,0,0,0,0,3,0,0,0]}]},
+{q:'如果游戏里有一天空闲时间，你会？',opts:[
+{text:'去竞技场排位上分',s:[3,0,0,0,0,0,0,0,0]},
+{text:'去没去过的角落逛逛',s:[0,3,0,0,0,0,0,0,0]},
+{text:'在主城和朋友聊天摸鱼',s:[0,0,2,0,0,0,0,2,0]},
+{text:'整理背包，优化装备配置',s:[0,0,0,1,2,0,0,0,0]}]},
+{q:'你在游戏里死了之后的第一反应是？',opts:[
+{text:'这把不算，再来！',s:[3,0,0,0,0,0,0,0,0]},
+{text:'复盘一下刚才哪里可以优化',s:[0,0,0,0,2,0,0,0,2]},
+{text:'算了不打了，去钓个鱼放松一下',s:[0,0,0,0,0,0,0,3,0]},
+{text:'等等，刚才那条路好像能绕过去',s:[0,3,0,0,0,0,0,0,0]}]},
+{q:'你选游戏最看重什么？',opts:[
+{text:'战斗系统是否硬核爽快',s:[3,0,0,0,0,0,0,0,0]},
+{text:'世界观和剧情是否引人入胜',s:[0,1,0,0,0,0,3,0,0]},
+{text:'自由度高不高，能不能自己搞创作',s:[0,0,0,0,0,3,0,0,0]},
+{text:'能不能和朋友一起玩',s:[0,0,3,0,0,0,0,0,0]}]},
+{q:'游戏更新了一个大版本，你最期待什么？',opts:[
+{text:'新的高难度副本和Boss',s:[2,0,0,0,0,0,0,0,2]},
+{text:'新的大地图和隐藏区域',s:[0,3,0,1,0,0,0,0,0]},
+{text:'新的建造素材和装饰系统',s:[0,0,0,0,0,3,0,0,0]},
+{text:'新的主线剧情章节',s:[0,0,0,0,0,0,3,0,0]}]},
+{q:'你怎么看游戏里的支线任务？',opts:[
+{text:'有经验和装备奖励的才做',s:[2,0,0,0,1,0,0,0,0]},
+{text:'每一个都要做完，不能有遗漏',s:[0,0,0,3,0,0,0,0,0]},
+{text:'剧情好的支线比主线还香',s:[0,0,0,0,0,0,3,0,0]},
+{text:'随缘，路过就做，不刻意找',s:[0,0,0,0,0,0,0,3,0]}]},
+{q:'你理想中的游戏基地/家园是什么样的？',opts:[
+{text:'实用就行，主要放装备和补给',s:[2,0,0,0,1,0,0,0,0]},
+{text:'精心装修，每个角落都要好看',s:[0,0,0,0,0,3,0,0,0]},
+{text:'开放给朋友们一起来玩的派对空间',s:[0,0,3,0,0,0,0,0,0]},
+{text:'不需要，时间应该花在探索上',s:[0,3,0,0,0,0,0,0,0]}]},
+{q:'你对游戏里的数值和机制研究到什么程度？',opts:[
+{text:'精通每个数值公式，配装必须最优解',s:[0,0,0,0,3,0,0,0,1]},
+{text:'大概了解就行，感觉对了就上',s:[0,0,0,0,0,0,0,3,0]},
+{text:'会研究速通路线和跳过技巧',s:[0,0,0,0,0,0,0,0,3]},
+{text:'更关注剧情和世界观设定',s:[0,0,0,0,0,0,3,0,0]}]},
+{q:'你最享受的游戏社交方式是？',opts:[
+{text:'竞技对战，用实力说话',s:[3,0,0,0,0,0,0,0,0]},
+{text:'一起组队开荒副本',s:[0,0,2,0,1,0,0,0,0]},
+{text:'在游戏里一起盖房子搞创作',s:[0,0,1,0,0,3,0,0,0]},
+{text:'分享自己发现的彩蛋和秘密',s:[0,2,1,0,0,0,0,0,0]}]},
+{q:'如果只能保留一种游戏能力，你选？',opts:[
+{text:'无敌的战斗力',s:[3,0,0,0,0,0,0,0,0]},
+{text:'看穿一切的分析能力',s:[0,0,0,0,3,0,0,0,0]},
+{text:'无限的创造力',s:[0,0,0,0,0,3,0,0,0]},
+{text:'超快的手速和反应',s:[0,0,0,0,0,0,0,0,3]}]},
+{q:'你玩完一款好游戏后会做什么？',opts:[
+{text:'二周目更高难度再来一遍',s:[2,0,0,0,0,0,0,0,2]},
+{text:'把所有隐藏内容和成就清完',s:[0,1,0,3,0,0,0,0,0]},
+{text:'去论坛和大家讨论剧情细节',s:[0,0,1,0,0,0,3,0,0]},
+{text:'推荐给朋友，拉他们一起玩',s:[0,0,3,0,0,0,0,0,0]}]},
+{q:'你的游戏座右铭是？',opts:[
+{text:'不服就干，越强越好',s:[3,0,0,0,0,0,0,0,0]},
+{text:'世界那么大，我想去看看',s:[0,3,0,0,0,0,0,0,0]},
+{text:'慢慢来，享受过程最重要',s:[0,0,0,0,0,0,1,2,0]},
+{text:'更快，更快，还能更快',s:[0,0,0,0,0,0,0,0,3]}]}
+];
+const TYPES=[
+{name:'战斗狂人',emoji:'⚔️',tag:'FIGHTER',slogan:'用实力说话，用战绩证明一切',traits:['好胜心强','操作硬核','热爱PVP','永不服输'],desc:'你是天生的战士，游戏对你来说就是一场场战斗的盛宴。你享受肾上腺素飙升的感觉，每一次击杀都让你热血沸腾。在你眼里，没有打不过的Boss，只有还不够强的自己。',quote:'"真正的战士，从不畏惧挑战。"',quoteAttr:'—— 每个魂系玩家',celebs:[{emoji:'🗡️',name:'魂系玩家'},{emoji:'🎯',name:'FPS高手'},{emoji:'🥊',name:'格斗达人'}],compat:[{i:4,pct:92},{i:8,pct:88},{i:2,pct:75}],stats:['动作游戏','格斗游戏','射击游戏','MOBA'],games:'黑暗之魂 / CSGO / 鬼泣 / 只狼'},
+{name:'探索先驱',emoji:'🧭',tag:'EXPLORER',slogan:'世界那么大，每个角落都值得一看',traits:['好奇心旺盛','耐心十足','细节控','地图全开'],desc:'你是游戏世界的旅行者，每一片未知的区域都是你的目的地。你会为了一个隐藏的山洞花上几个小时，也会为了一处绝美的风景驻足良久。对你来说，旅途本身就是最好的奖励。',quote:'"不是所有流浪的人都迷失了方向。"',quoteAttr:'—— 托尔金',celebs:[{emoji:'🗺️',name:'全图探索者'},{emoji:'🔍',name:'彩蛋猎人'},{emoji:'📸',name:'游戏摄影师'}],compat:[{i:6,pct:90},{i:3,pct:85},{i:5,pct:82}],stats:['开放世界','沙盒游戏','冒险游戏','解谜游戏'],games:'塞尔达 / 艾尔登法环 / 旷野之息 / 巫师3'},
+{name:'社交达人',emoji:'👑',tag:'SOCIALIZER',slogan:'一个人走得快，一群人走得远',traits:['人缘好','团队核心','乐于助人','公会会长'],desc:'游戏对你来说是社交的延伸，你享受和朋友们一起冒险的时光。你是公会里最受欢迎的人，总能把大家凝聚在一起。比起通关，你更在意和谁一起玩。',quote:'"最好的游戏体验，是和对的人一起。"',quoteAttr:'—— 每个MMO老玩家',celebs:[{emoji:'🤝',name:'公会会长'},{emoji:'💬',name:'频道话唠'},{emoji:'🎁',name:'送装大佬'}],compat:[{i:7,pct:93},{i:0,pct:80},{i:5,pct:85}],stats:['MMO','合作游戏','派对游戏','社交模拟'],games:'最终幻想14 / 动物森友会 / 双人成行 / 糖豆人'},
+{name:'成就猎人',emoji:'🏆',tag:'ACHIEVER',slogan:'不全收集不算通关，不白金不算玩过',traits:['完美主义','毅力惊人','收集癖','强迫症'],desc:'你是游戏里的完美主义者，每一个成就、每一个收集品都不能放过。你的游戏时长总是远超平均，因为你不会放过任何一个角落的宝箱。白金奖杯是你的勋章。',quote:'"100%完成度，是对游戏最大的尊重。"',quoteAttr:'—— 白金党信条',celebs:[{emoji:'💎',name:'白金猎人'},{emoji:'📋',name:'清单达人'},{emoji:'🎖️',name:'全成就玩家'}],compat:[{i:1,pct:90},{i:4,pct:85},{i:8,pct:78}],stats:['RPG','收集游戏','开放世界','养成游戏'],games:'原神 / 空洞骑士 / 星露谷 / 宝可梦'},
+{name:'策略大师',emoji:'🧠',tag:'STRATEGIST',slogan:'运筹帷幄之中，决胜千里之外',traits:['逻辑缜密','数据控','深度思考','全局观'],desc:'你是游戏里的军师，每一步都经过精密计算。你享受用智慧碾压对手的快感，数值公式和配装方案是你的武器。在你面前，没有解不开的局。',quote:'"知己知彼，百战不殆。"',quoteAttr:'—— 孙子兵法',celebs:[{emoji:'♟️',name:'棋局大师'},{emoji:'📊',name:'数据党'},{emoji:'🏗️',name:'配装专家'}],compat:[{i:0,pct:92},{i:8,pct:90},{i:3,pct:82}],stats:['策略游戏','战棋游戏','卡牌游戏','塔防游戏'],games:'文明6 / 博德之门3 / 火焰纹章 / 杀戮尖塔'},
+{name:'创造之神',emoji:'🎨',tag:'CREATOR',slogan:'给我工具，我能造一个世界',traits:['想象力丰富','审美在线','动手能力强','细节狂魔'],desc:'你是游戏里的艺术家，建造和创作是你最大的乐趣。你的游戏截图总能惊艳朋友圈，你的建筑作品让人叹为观止。游戏是你表达创意的画布。',quote:'"创造，是人类最接近神的时刻。"',quoteAttr:'—— 我的世界玩家',celebs:[{emoji:'🏠',name:'建筑大师'},{emoji:'👗',name:'捏脸达人'},{emoji:'🎭',name:'MOD作者'}],compat:[{i:7,pct:88},{i:2,pct:85},{i:1,pct:82}],stats:['沙盒游戏','建造游戏','模拟经营','创意工坊'],games:'我的世界 / 动物森友会 / 模拟城市 / 戴森球计划'},
+{name:'剧情沉浸者',emoji:'📖',tag:'STORYTELLER',slogan:'好的故事，值得反复品味',traits:['感性丰富','代入感强','文艺青年','细节党'],desc:'你玩游戏是为了体验一段精彩的故事。你会为NPC的命运落泪，会为剧情的反转拍案叫绝。对你来说，游戏是互动的电影，是可以亲身参与的小说。',quote:'"我们在游戏里活过另一种人生。"',quoteAttr:'—— 每个剧情党',celebs:[{emoji:'📚',name:'剧情考据党'},{emoji:'🎬',name:'过场不跳者'},{emoji:'💭',name:'支线全做者'}],compat:[{i:1,pct:90},{i:5,pct:82},{i:7,pct:80}],stats:['RPG','视觉小说','冒险游戏','互动电影'],games:'最后生还者 / 巫师3 / 底特律 / 十三机兵'},
+{name:'佛系玩家',emoji:'☕',tag:'CASUAL',slogan:'游戏嘛，开心最重要',traits:['心态好','随缘佛系','享受过程','零压力'],desc:'你是游戏里最快乐的人，不卷不肝不焦虑。你享受游戏带来的放松和愉悦，不会为了排名和数据给自己压力。钓鱼、种田、逛街，每一刻都是享受。',quote:'"人生已经很累了，游戏就该轻松点。"',quoteAttr:'—— 佛系玩家宣言',celebs:[{emoji:'🎣',name:'钓鱼佬'},{emoji:'🌾',name:'种田党'},{emoji:'🐱',name:'撸猫达人'}],compat:[{i:2,pct:93},{i:5,pct:88},{i:6,pct:80}],stats:['休闲游戏','模拟经营','音乐游戏','放置游戏'],games:'星露谷 / 动物森友会 / 旅行青蛙 / 猫咪后院'},
+{name:'速通达人',emoji:'⚡',tag:'SPEEDRUNNER',slogan:'更快，更快，还能更快',traits:['追求极限','技术流','不走寻常路','帧数精确'],desc:'你是游戏里的时间魔法师，别人花几十小时的游戏你几小时就能通关。你熟知每一个跳过技巧和加速方法，每一帧都经过精密计算。打破记录是你永恒的追求。',quote:'"时间就是一切，每一帧都不能浪费。"',quoteAttr:'—— 速通社区格言',celebs:[{emoji:'⏱️',name:'世界纪录保持者'},{emoji:'🐛',name:'BUG猎人'},{emoji:'🚀',name:'序列破坏者'}],compat:[{i:4,pct:90},{i:0,pct:88},{i:3,pct:78}],stats:['平台跳跃','动作游戏','魂系游戏','独立游戏'],games:'空洞骑士 / 蔚蓝 / 超级马里奥 / 只狼'}
+];
+const DIM_NAMES=['战斗','探索','社交','成就','策略','创造','剧情','休闲','速通'];
+let cur=0,answered=false,scores=new Array(9).fill(0);
+let rewardAd=null,rewardAdInited=false,rewardAdLoading=false,rewardAdSessionId=0;
+let rewardAdUnlockTimer=null,rewardAdLaunchFallbackTimer=null,rewardAdProgressTimer=null;
+let rewardAdWatchStartedAt=0,rewardAdWatchDelay=8000;
+const rewardAdLogPrefix='[game-personality-reward]';
+function startQuiz(){cur=0;scores=new Array(9).fill(0);show('quiz');renderQ()}
+function show(id){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function renderQ(){
+  answered=false;const q=Q[cur];
+  document.getElementById('progressFill').style.width=((cur/Q.length)*100)+'%';
+  document.getElementById('quizCount').textContent=(cur+1)+' / '+Q.length;
+  document.getElementById('quizQuestion').textContent=q.q;
+  const w=document.getElementById('quizOptions');w.innerHTML='';
+  q.opts.forEach((o,i)=>{const d=document.createElement('div');d.className='quiz-option';d.textContent=o.text;d.onclick=()=>selectOpt(i);w.appendChild(d)});
+}
+function selectOpt(i){
+  if(answered)return;answered=true;
+  document.querySelectorAll('.quiz-option')[i].classList.add('selected');
+  Q[cur].opts[i].s.forEach((v,j)=>scores[j]+=v);
+  setTimeout(()=>{cur++;cur<Q.length?renderQ():showResult()},350);
+}
+function showResult(){
+  show('result');
+  const max=Math.max(...scores),ti=scores.indexOf(max);
+  const total=scores.reduce((a,b)=>a+b,0);
+  const matchPct=Math.min(99,Math.round(60+max/total*40*3));
+  const t=TYPES[ti];
+  // sorted types by score
+  const sorted=scores.map((s,i)=>({s,i})).sort((a,b)=>b.s-a.s);
+  const top3=sorted.slice(0,3);
+  const el=document.getElementById('result');
+  el.className='section active type-'+ti;
+  el.innerHTML=`
+    <div class="result-card">
+      <div class="result-match">${matchPct}%</div>
+      <div class="result-match-label">人格匹配度</div>
+      <div class="result-avatar">${t.emoji}</div>
+      <div class="result-tag">${t.tag}</div>
+      <div class="result-name">${t.name}</div>
+      <div class="result-slogan">${t.slogan}</div>
+      <div class="traits-wrap">${t.traits.map(x=>`<span class="trait-tag">${x}</span>`).join('')}</div>
+      <div class="radar-wrap"><canvas id="radarCanvas" width="220" height="220"></canvas></div>
+      <div class="top3-section">${top3.map((x,i)=>{
+        const pct=Math.round(x.s/total*100);
+        const colors=['var(--c1)','rgba(255,255,255,.4)','rgba(255,255,255,.25)'];
+        return `<div class="top3-item"><div class="top3-rank">${['🥇','🥈','🥉'][i]}</div><div class="top3-info"><div class="top3-name">${TYPES[x.i].emoji} ${TYPES[x.i].name}</div><div class="top3-bar"><div class="top3-fill" style="width:${pct}%;background:${colors[i]}"></div></div></div><div class="top3-pct">${pct}%</div></div>`;
+      }).join('')}</div>
+      <button class="btn-unlock" id="rewardUnlockBtn" onclick="showAd()">🔓 查看激励视频解锁深度解析</button>
+      <button class="btn-share" onclick="share()">📤 分享给朋友</button>
+      <button class="btn-retry" onclick="retry()">重新测试</button>
+    </div>
+    <div class="analysis-section" id="analysisSection" style="display:none">
+      <div class="quote-box"><div class="quote-text">${t.quote}</div><div class="quote-attr">${t.quoteAttr}</div></div>
+      <div class="analysis-card"><h3>🔍 深度解析</h3><p>${t.desc}</p></div>
+      <div class="analysis-card"><h3>🎮 推荐游戏类型</h3><p>${t.stats.join(' · ')}</p><p style="margin-top:8px;font-size:12px;color:rgba(255,255,255,.5)">代表作：${t.games}</p></div>
+      <div class="analysis-card"><h3>🌟 同类名人堂</h3><div class="celeb-list">${t.celebs.map(c=>`<div class="celeb-item"><div class="celeb-avatar">${c.emoji}</div><div class="celeb-name">${c.name}</div></div>`).join('')}</div></div>
+      <div class="analysis-card"><h3>💞 人格相性</h3><div class="compat-grid">${t.compat.map(c=>`<div class="compat-item"><div class="compat-emoji">${TYPES[c.i].emoji}</div><div class="compat-label">${TYPES[c.i].name}</div><div class="compat-pct" style="color:var(--c1)">${c.pct}%</div></div>`).join('')}</div></div>
+      <div class="analysis-card"><h3>📊 九维能力值</h3>${DIM_NAMES.map((n,i)=>{const pct=total?Math.round(scores[i]/total*100):0;return `<div class="stat-row"><span class="stat-label">${n}</span><div class="stat-stars">${'★'.repeat(Math.max(1,Math.round(scores[i]/max*5)))}${'☆'.repeat(5-Math.max(1,Math.round(scores[i]/max*5)))}</div></div>`;}).join('')}</div>
+      <div class="analysis-card"><h3>💡 游戏建议</h3><p>作为「${t.name}」，你最适合${t.stats[0]}和${t.stats[1]}类型。试试和「${TYPES[t.compat[0].i].name}」类型的朋友组队，你们的配合度高达${t.compat[0].pct}%！</p></div>
+      <button class="btn-share" onclick="share()" style="margin-top:4px">📤 分享我的游戏人格</button>
+      <button class="btn-retry" onclick="retry()">重新测试</button>
+    </div>`;
+  setTimeout(()=>drawRadar(scores,ti),100);
+  // scroll hint
+  const hint=document.createElement('div');hint.className='scroll-hint';hint.innerHTML='向下滑动查看完整报告<span class="arrow">↓</span>';document.body.appendChild(hint);
+  setTimeout(()=>{hint.style.opacity='0';setTimeout(()=>hint.remove(),500)},3000);
+  window.addEventListener('scroll',function onScroll(){hint.style.opacity='0';setTimeout(()=>hint.remove(),500);window.removeEventListener('scroll',onScroll)},{once:true});
+}
+function drawRadar(sc,ti){
+  const cv=document.getElementById('radarCanvas');if(!cv)return;
+  const ctx=cv.getContext('2d'),cx=110,cy=110,r=80,n=9;
+  const max=Math.max(...sc)||1;
+  ctx.clearRect(0,0,220,220);
+  // grid
+  for(let lv=1;lv<=3;lv++){
+    ctx.beginPath();
+    for(let i=0;i<=n;i++){const a=Math.PI*2/n*i-Math.PI/2;ctx.lineTo(cx+r*lv/3*Math.cos(a),cy+r*lv/3*Math.sin(a))}
+    ctx.closePath();ctx.strokeStyle='rgba(255,255,255,.1)';ctx.stroke();
+  }
+  // axes + labels
+  const style=getComputedStyle(document.getElementById('result'));
+  const c1=style.getPropertyValue('--c1').trim()||'#667eea';
+  for(let i=0;i<n;i++){
+    const a=Math.PI*2/n*i-Math.PI/2;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));ctx.strokeStyle='rgba(255,255,255,.08)';ctx.stroke();
+    const lx=cx+(r+16)*Math.cos(a),ly=cy+(r+16)*Math.sin(a);
+    ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(DIM_NAMES[i],lx,ly);
+  }
+  // data
+  ctx.beginPath();
+  for(let i=0;i<=n;i++){const idx=i%n;const a=Math.PI*2/n*idx-Math.PI/2;const v=sc[idx]/max;ctx.lineTo(cx+r*v*Math.cos(a),cy+r*v*Math.sin(a))}
+  ctx.closePath();ctx.fillStyle=c1.replace(')',',0.2)').replace('rgb','rgba');ctx.fill();ctx.strokeStyle=c1;ctx.lineWidth=2;ctx.stroke();
+  // dots
+  for(let i=0;i<n;i++){const a=Math.PI*2/n*i-Math.PI/2;const v=sc[i]/max;ctx.beginPath();ctx.arc(cx+r*v*Math.cos(a),cy+r*v*Math.sin(a),3,0,Math.PI*2);ctx.fillStyle=c1;ctx.fill()}
+}
+function logRewardAd(title,data){
+  if(window.console&&console.log)console.log(rewardAdLogPrefix,title,data||'');
+}
+function initRewardAd(){
+  if(rewardAdInited)return !!rewardAd;
+  rewardAdInited=true;
+  if(!window.RewardVideoBridge){
+    toast('激励视频组件加载失败');
+    logRewardAd('RewardVideoBridge missing');
+    return false;
+  }
+  rewardAd=RewardVideoBridge.create({
+    origin:'tobid',
+    sdkId:'6362731749334746',
+    sceneId:'leagueCollect_14',
+    pgid:'1.15.2',
+    callbackTimeout:8000,
+    data:{from:'game-personality',reward:'unlock_analysis'},
+    onLog:logRewardAd
+  });
+  rewardAd.detectBridge(error=>{
+    if(error){logRewardAd('bridge detect failed',{message:error.message});return}
+    logRewardAd('bridge detected');
+  });
+  return true;
+}
+function preloadRewardAd(silent){
+  if(!rewardAd&&!initRewardAd())return;
+  rewardAd.preload((error,response,meta)=>{
+    if(error){
+      logRewardAd('preload failed',{message:error.message});
+      if(!silent)toast('激励视频预加载失败，请稍后再试');
+      return;
+    }
+    logRewardAd('preload called',{response,meta});
+  });
+}
+function setUnlockButtonLoading(loading){
+  const btn=document.getElementById('rewardUnlockBtn');
+  if(!btn)return;
+  btn.disabled=loading;
+  btn.textContent=loading?'正在打开激励视频':'🔓 查看激励视频解锁深度解析';
+}
+function showRewardAdOverlay(title,desc){
+  const ov=document.getElementById('adOverlay');
+  const fill=document.getElementById('adProgressFill');
+  document.getElementById('adTitle').innerHTML=title;
+  document.getElementById('adTimer').textContent=desc;
+  document.getElementById('adCloseBtn').style.display='inline-block';
+  fill.style.width='0';
+  ov.classList.add('active');
+}
+function clearRewardAdTimers(){
+  if(rewardAdUnlockTimer){clearTimeout(rewardAdUnlockTimer);rewardAdUnlockTimer=null}
+  if(rewardAdLaunchFallbackTimer){clearTimeout(rewardAdLaunchFallbackTimer);rewardAdLaunchFallbackTimer=null}
+  if(rewardAdProgressTimer){clearInterval(rewardAdProgressTimer);rewardAdProgressTimer=null}
+}
+function resetRewardAdWaiting(message){
+  rewardAdSessionId++;
+  rewardAdLoading=false;
+  rewardAdWatchStartedAt=0;
+  clearRewardAdTimers();
+  document.getElementById('adOverlay').classList.remove('active');
+  setUnlockButtonLoading(false);
+  if(message)toast(message);
+  setTimeout(()=>preloadRewardAd(true),500);
+}
+function unlockAnalysis(){
+  const section=document.getElementById('analysisSection');
+  if(!section)return;
+  section.style.display='block';
+  section.scrollIntoView({behavior:'smooth'});
+}
+function completeRewardAdUnlock(sessionId,reason,response){
+  if(sessionId!==rewardAdSessionId||!rewardAdLoading)return;
+  rewardAdLoading=false;
+  rewardAdWatchStartedAt=0;
+  clearRewardAdTimers();
+  document.getElementById('adOverlay').classList.remove('active');
+  setUnlockButtonLoading(false);
+  logRewardAd('unlock analysis',{reason,response:response||null});
+  toast('广告观看完成，正在打开深度解析');
+  unlockAnalysis();
+  setTimeout(()=>preloadRewardAd(true),800);
+}
+function startRewardAdUnlockTimer(sessionId,reason){
+  if(sessionId!==rewardAdSessionId||!rewardAdLoading||rewardAdUnlockTimer)return;
+  const fill=document.getElementById('adProgressFill');
+  let left=rewardAdWatchDelay/1000;
+  rewardAdWatchStartedAt=Date.now();
+  fill.style.width='0';
+  document.getElementById('adTitle').innerHTML='激励视频播放中';
+  document.getElementById('adTimer').textContent='8 秒后自动解锁深度解析';
+  logRewardAd('start 8s unlock timer',{reason});
+  rewardAdProgressTimer=setInterval(()=>{
+    const elapsed=Date.now()-rewardAdWatchStartedAt;
+    const pct=Math.min(100,elapsed/rewardAdWatchDelay*100);
+    fill.style.width=pct+'%';
+    left=Math.max(0,Math.ceil((rewardAdWatchDelay-elapsed)/1000));
+    document.getElementById('adTimer').textContent=left>0?left+' 秒后自动解锁深度解析':'正在解锁深度解析';
+  },300);
+  rewardAdUnlockTimer=setTimeout(()=>completeRewardAdUnlock(sessionId,reason||'8s auto unlock'),rewardAdWatchDelay);
+}
+function handleRewardAdPageLeave(){
+  if(!rewardAdLoading)return;
+  startRewardAdUnlockTimer(rewardAdSessionId,'page leave');
+}
+function handleRewardAdPageReturn(){
+  if(!rewardAdLoading||!rewardAdWatchStartedAt)return;
+  if(Date.now()-rewardAdWatchStartedAt<rewardAdWatchDelay){
+    logRewardAd('return before 8s, reset reward state');
+    resetRewardAdWaiting('广告未观看满 8 秒，请重新观看');
+  }
+}
+function showAd(){
+  let sessionId;
+  if(rewardAdLoading)return;
+  if(!rewardAd&&!initRewardAd())return;
+  clearRewardAdTimers();
+  rewardAdSessionId++;
+  sessionId=rewardAdSessionId;
+  rewardAdWatchStartedAt=0;
+  rewardAdLoading=true;
+  setUnlockButtonLoading(true);
+  showRewardAdOverlay('正在拉起激励视频','进入广告后 8 秒自动解锁深度解析');
+  preloadRewardAd(true);
+  setTimeout(()=>{
+    if(sessionId!==rewardAdSessionId||!rewardAdLoading)return;
+    rewardAd.show({
+      data:{from:'game-personality',reward:'unlock_analysis'}
+    },(error,response,meta)=>{
+      if(sessionId!==rewardAdSessionId||!rewardAdLoading)return;
+      if(error){
+        logRewardAd('show failed',{message:error.message});
+        resetRewardAdWaiting();
+        toast('激励视频展示失败，请稍后再试');
+        return;
+      }
+      if(meta&&meta.timeout){
+        logRewardAd('show callback timeout, unlock by 8s fallback');
+        completeRewardAdUnlock(sessionId,'connectVideo 8s timeout',response);
+        return;
+      }
+      logRewardAd('connectVideo callback received',response);
+      startRewardAdUnlockTimer(sessionId,'connectVideo callback');
+    });
+    rewardAdLaunchFallbackTimer=setTimeout(()=>startRewardAdUnlockTimer(sessionId,'launch fallback'),1200);
+  },300);
+}
+function closeAd(){
+  resetRewardAdWaiting('已取消等待，可重新点击观看');
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)handleRewardAdPageLeave();
+  else handleRewardAdPageReturn();
+});
+window.addEventListener('pagehide',handleRewardAdPageLeave);
+window.addEventListener('pageshow',handleRewardAdPageReturn);
+window.addEventListener('blur',handleRewardAdPageLeave);
+window.addEventListener('focus',handleRewardAdPageReturn);
+function share(){
+  const txt=document.querySelector('.result-name')?.textContent||'';
+  if(navigator.share){navigator.share({title:'我的游戏人格：'+txt,text:'我是「'+txt+'」！快来测测你是哪种游戏人格？',url:location.href}).catch(()=>{})}
+  else{navigator.clipboard?.writeText('我是「'+txt+'」！快来测测你是哪种游戏人格→ '+location.href).then(()=>toast('已复制到剪贴板')).catch(()=>toast('分享链接复制失败'))}
+}
+function retry(){resetRewardAdWaiting();show('home')}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+preloadRewardAd(true);
+</script>
+</body>
+</html>
