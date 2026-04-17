@@ -749,7 +749,6 @@ function showResult(){
       <div class="analysis-card"><h3>💞 人格相性</h3><div class="compat-grid">${t.compat.map(c=>`<div class="compat-item"><div class="compat-emoji">${TYPES[c.i].emoji}</div><div class="compat-label">${TYPES[c.i].name}</div><div class="compat-pct" style="color:var(--c1)">${c.pct}%</div></div>`).join('')}</div></div>
       <div class="analysis-card"><h3>📊 九维能力值</h3>${DIM_NAMES.map((n,i)=>{const pct=total?Math.round(scores[i]/total*100):0;return `<div class="stat-row"><span class="stat-label">${n}</span><div class="stat-stars">${'★'.repeat(Math.max(1,Math.round(scores[i]/max*5)))}${'☆'.repeat(5-Math.max(1,Math.round(scores[i]/max*5)))}</div></div>`;}).join('')}</div>
       <div class="analysis-card"><h3>💡 游戏建议</h3><p>作为「${t.name}」，你最适合${t.stats[0]}和${t.stats[1]}类型。试试和「${TYPES[t.compat[0].i].name}」类型的朋友组队，你们的配合度高达${t.compat[0].pct}%！</p></div>
-      <button class="btn-share" onclick="share()" style="margin-top:4px">📤 分享我的游戏人格</button>
       <button class="btn-retry" onclick="retry()">重新测试</button>
     </div>`;
   setTimeout(()=>drawRadar(scores,ti),100);
